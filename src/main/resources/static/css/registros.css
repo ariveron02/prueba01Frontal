@@ -1,0 +1,54 @@
+/* registros.css - Estilos específicos para registros */
+.registros-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.registro-item {
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.registro-info h4 {
+    margin-bottom: 0.25rem;
+}
+
+.registro-info p {
+    color: #666;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.horas-trabajadas {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fa709a;
+}
+
+.fecha-registro {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+.resumen-semanal {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}

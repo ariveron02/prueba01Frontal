@@ -1,0 +1,248 @@
+1️⃣ PROYECTOS
+POST - Crear Proyecto
+URL: http://localhost:8080/proyectos
+
+json
+{
+    "nombre": "Sistema de Gestión de Proyectos",
+    "descripcion": "Plataforma para gestionar proyectos, hitos y actividades",
+    "fechaInicio": "2026-03-25",
+    "fechaFin": "2026-12-31"
+}
+json
+{
+    "nombre": "App Móvil Empresarial",
+    "descripcion": "Desarrollo de aplicación móvil para gestión interna",
+    "fechaInicio": "2026-04-01",
+    "fechaFin": "2026-08-30"
+}
+2️⃣ USUARIOS
+POST - Crear Usuario
+URL: http://localhost:8080/usuarios
+
+json
+{
+    "nombre": "Juan Pérez",
+    "correo": "juan.perez@empresa.com"
+}
+json
+{
+    "nombre": "María García",
+    "correo": "maria.garcia@empresa.com"
+}
+json
+{
+    "nombre": "Carlos López",
+    "correo": "carlos.lopez@empresa.com"
+}
+json
+{
+    "nombre": "Ana Martínez",
+    "correo": "ana.martinez@empresa.com"
+}
+3️⃣ HITOS (requieren ID de Proyecto)
+Primero, obten los IDs de los proyectos creados con:
+GET http://localhost:8080/proyectos
+
+POST - Crear Hito
+URL: http://localhost:8080/hitos
+
+Para Proyecto ID 1:
+
+json
+{
+    "nombre": "Fase de Análisis",
+    "descripcion": "Requerimientos y documentación del sistema",
+    "fechaInicio": "2026-03-25",
+    "fechaFin": "2026-04-15",
+    "proyectoId": 1
+}
+json
+{
+    "nombre": "Fase de Diseño",
+    "descripcion": "Arquitectura y diseño de la solución",
+    "fechaInicio": "2026-04-16",
+    "fechaFin": "2026-05-15",
+    "proyectoId": 1
+}
+json
+{
+    "nombre": "Fase de Desarrollo",
+    "descripcion": "Implementación del sistema",
+    "fechaInicio": "2026-05-16",
+    "fechaFin": "2026-08-31",
+    "proyectoId": 1
+}
+Para Proyecto ID 2:
+
+json
+{
+    "nombre": "MVP - Funcionalidades Básicas",
+    "descripcion": "Desarrollo del producto mínimo viable",
+    "fechaInicio": "2026-04-01",
+    "fechaFin": "2026-05-31",
+    "proyectoId": 2
+}
+4️⃣ ACTIVIDADES (requieren ID de Hito y Usuario)
+Primero, obten los IDs de hitos y usuarios creados:
+GET http://localhost:8080/hitos
+GET http://localhost:8080/usuarios
+
+POST - Crear Actividad
+URL: http://localhost:8080/actividades
+
+json
+{
+    "nombre": "Análisis de Requerimientos",
+    "descripcion": "Reuniones con stakeholders y documentación",
+    "fechaInicio": "2026-03-25",
+    "fechaFin": "2026-03-30",
+    "hitoId": 1,
+    "usuarioAsignadoId": 1
+}
+json
+{
+    "nombre": "Diseño de Base de Datos",
+    "descripcion": "Modelo entidad-relación y diagramas",
+    "fechaInicio": "2026-04-01",
+    "fechaFin": "2026-04-10",
+    "hitoId": 2,
+    "usuarioAsignadoId": 2
+}
+json
+{
+    "nombre": "Desarrollo de API REST",
+    "descripcion": "Implementación de endpoints con Spring Boot",
+    "fechaInicio": "2026-05-16",
+    "fechaFin": "2026-06-15",
+    "hitoId": 3,
+    "usuarioAsignadoId": 3
+}
+json
+{
+    "nombre": "Pruebas Unitarias",
+    "descripcion": "Creación de pruebas con JUnit",
+    "fechaInicio": "2026-06-16",
+    "fechaFin": "2026-06-30",
+    "hitoId": 3,
+    "usuarioAsignadoId": 4
+}
+json
+{
+    "nombre": "Configuración de CI/CD",
+    "descripcion": "Configurar pipeline de integración continua",
+    "fechaInicio": "2026-04-05",
+    "fechaFin": "2026-04-20",
+    "hitoId": 4,
+    "usuarioAsignadoId": 1
+}
+5️⃣ REGISTROS DE USUARIO (requieren ID de Actividad y Usuario)
+Primero, obten los IDs de actividades creadas:
+GET http://localhost:8080/actividades
+
+POST - Crear Registro de Usuario
+URL: http://localhost:8080/registros
+
+json
+{
+    "horasTrabajadas": 8.5,
+    "fechaRegistro": "2026-03-26",
+    "actividadId": 1,
+    "usuarioId": 1
+}
+json
+{
+    "horasTrabajadas": 7.0,
+    "fechaRegistro": "2026-03-27",
+    "actividadId": 1,
+    "usuarioId": 1
+}
+json
+{
+    "horasTrabajadas": 6.5,
+    "fechaRegistro": "2026-04-02",
+    "actividadId": 2,
+    "usuarioId": 2
+}
+json
+{
+    "horasTrabajadas": 8.0,
+    "fechaRegistro": "2026-05-17",
+    "actividadId": 3,
+    "usuarioId": 3
+}
+json
+{
+    "horasTrabajadas": 7.5,
+    "fechaRegistro": "2026-05-18",
+    "actividadId": 3,
+    "usuarioId": 3
+}
+📊 Endpoints GET para verificar datos:
+Endpoint	URL
+Listar Proyectos	GET http://localhost:8080/proyectos
+Listar Usuarios	GET http://localhost:8080/usuarios
+Listar Hitos	GET http://localhost:8080/hitos
+Listar Actividades	GET http://localhost:8080/actividades
+Listar Registros	GET http://localhost:8080/registros
+🔄 Orden recomendado para probar:
+Crear Proyectos (POST /proyectos) - 2 proyectos
+
+Crear Usuarios (POST /usuarios) - 4 usuarios
+
+Listar Proyectos (GET /proyectos) - Para obtener IDs
+
+Listar Usuarios (GET /usuarios) - Para obtener IDs
+
+Crear Hitos (POST /hitos) - 4 hitos
+
+Listar Hitos (GET /hitos) - Para obtener IDs
+
+Crear Actividades (POST /actividades) - 5 actividades
+
+Listar Actividades (GET /actividades) - Para obtener IDs
+
+Crear Registros (POST /registros) - 5 registros
+
+Listar todo (GET de cada endpoint)
+
+✏️ Endpoints de actualización (PUT):
+Actualizar Proyecto
+PUT http://localhost:8080/proyectos/1
+
+json
+{
+    "nombre": "Sistema de Gestión de Proyectos - Actualizado",
+    "descripcion": "Plataforma con módulo de reportes avanzados",
+    "fechaInicio": "2026-03-25",
+    "fechaFin": "2026-12-31"
+}
+Actualizar Usuario
+PUT http://localhost:8080/usuarios/1
+
+json
+{
+    "nombre": "Juan Carlos Pérez",
+    "correo": "juancarlos.perez@empresa.com"
+}
+❌ Endpoints de eliminación (DELETE):
+DELETE http://localhost:8080/registros/1
+
+DELETE http://localhost:8080/actividades/1
+
+DELETE http://localhost:8080/hitos/1
+
+DELETE http://localhost:8080/usuarios/1
+
+DELETE http://localhost:8080/proyectos/1
+
+📝 Notas importantes:
+IDs: Los IDs se generan automáticamente (1, 2, 3...). Ajusta los IDs en los JSON según los valores que te devuelvan las respuestas.
+
+Fechas: Usa el formato YYYY-MM-DD
+
+Validaciones: Algunos campos pueden tener validaciones (ej. correo único, fechas válidas)
+
+Orden: No puedes crear un hito sin un proyecto existente, ni una actividad sin hito y usuario existentes
+
+¿Quieres que ajuste algún JSON o que te explique algún endpoint en particular?

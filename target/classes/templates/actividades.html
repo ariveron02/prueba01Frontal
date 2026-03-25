@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Actividades</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- CSS Propios -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/actividades.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">Sistema de Gestión</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" th:href="@{/usuarios}">👥 Usuarios</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/proyectos}">📁 Proyectos</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/hitos}">🎯 Hitos</a></li>
+                    <li class="nav-item"><a class="nav-link active" th:href="@{/actividades}">✅ Actividades</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/registros}">⏱️ Registros</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">✅ Gestión de Actividades</h1>
+        
+        <!-- Tarjeta de estadísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card text-white">
+                    <div class="card-body text-center">
+                        <h3 id="totalActividades">0</h3>
+                        <p class="mb-0">Total Actividades</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Formulario Crear Actividad -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">➕ Crear Nueva Actividad</h5>
+            </div>
+            <div class="card-body">
+                <form id="formActividad">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre de la Actividad:</label>
+                        <input type="text" class="form-control" id="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción:</label>
+                        <textarea class="form-control" id="descripcion" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fechaInicio" class="form-label">Fecha de Inicio:</label>
+                            <input type="date" class="form-control" id="fechaInicio" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="fechaFin" class="form-label">Fecha de Fin:</label>
+                            <input type="date" class="form-control" id="fechaFin" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="hitoId" class="form-label">Hito:</label>
+                            <select class="form-select" id="hitoId" required>
+                                <option value="">Seleccionar hito</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="usuarioId" class="form-label">Usuario Asignado:</label>
+                            <select class="form-select" id="usuarioId" required>
+                                <option value="">Seleccionar usuario</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear Actividad</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Lista de Actividades -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">📋 Lista de Actividades</h5>
+            </div>
+            <div class="card-body">
+                <div id="listaActividades" class="actividades-list"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/actividades.js}"></script>
+</body>
+</html>
