@@ -9,6 +9,8 @@ import lombok.Setter;
 @Setter
 public class UsuarioDTO {
 
+    private Long id;
+
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 
