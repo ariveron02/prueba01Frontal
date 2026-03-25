@@ -42,12 +42,17 @@ async function cargarUsuarios() {
 
 // Actualizar tabla de usuarios
 function actualizarTablaUsuarios(usuarios) {
-    const tbody = document.querySelector('#tablaUsuarios tbody');
-    if (!tbody) return;
+    // Busca el tbody por ID (es directo, sin "tbody" extra)
+    const tbody = document.getElementById('tablaUsuarios');
     
-    if (usuarios.length === 0) {
+    if (!tbody) {
+        console.error('No se encontró el elemento con id "tablaUsuarios"');
+        return;
+    }
+    
+    if (!usuarios || usuarios.length === 0) {
         tbody.innerHTML = `
-            <tr>
+            经营
                 <td colspan="4" class="text-center">No hay usuarios registrados</td>
             </tr>
         `;
@@ -57,12 +62,7 @@ function actualizarTablaUsuarios(usuarios) {
     tbody.innerHTML = usuarios.map(usuario => `
         <tr data-id="${usuario.id}">
             <td>${usuario.id}</td>
-            <td>
-                <div class="usuario-avatar">
-                    ${usuario.nombre.charAt(0).toUpperCase()}
-                </div>
-                ${usuario.nombre}
-            </td>
+            <td>${usuario.nombre}</td>
             <td>${usuario.correo}</td>
             <td>
                 <button class="btn btn-warning btn-sm" onclick="editarUsuario(${usuario.id})">

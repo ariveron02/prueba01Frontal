@@ -20,10 +20,6 @@ public class UsuarioWebController {
     
     private final String authHeader = "Basic YWRtaW46YWRtaW4xMjM=";
     
-    @GetMapping
-    public String usuarios() {
-        return "usuarios";
-    }
     
     @GetMapping
     public String listarUsuarios(Model model) {

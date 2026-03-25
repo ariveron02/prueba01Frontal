@@ -28,7 +28,7 @@ async function cargarProyectos() {
 }
 
 function actualizarTablaProyectos(proyectos) {
-    const tbody = document.querySelector('#tablaProyectos tbody');
+    const tbody = document.querySelector('tablaProyectos');
     if (!tbody) return;
     
     if (proyectos.length === 0) {
