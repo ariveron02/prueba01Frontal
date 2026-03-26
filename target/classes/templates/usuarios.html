@@ -84,7 +84,25 @@
             </div>
         </div>
     </div>
-    
+    <!-- Controles de paginación -->
+    <div class="card mt-3">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label">Mostrar:</label>
+                    <select id="tamanioPagina" class="form-select">
+                        <option value="5">5 usuarios</option>
+                        <option value="10" selected>10 usuarios</option>
+                        <option value="20">20 usuarios</option>
+                        <option value="50">50 usuarios</option>
+                    </select>
+                </div>
+                <div class="col-md-9">
+                    <div id="paginationControls"></div>
+                </div>
+            </div>
+        </div>
+    </div>    
     <!-- Modal Editar Usuario -->
     <div class="modal fade" id="modalEditar" tabindex="-1">
         <div class="modal-dialog">

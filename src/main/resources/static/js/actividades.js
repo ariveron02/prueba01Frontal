@@ -1,10 +1,13 @@
-// actividades.js - Gestión de actividades
+// hitos.js - Gestión de hitos con paginación
 
 const API_URL = 'http://localhost:8080';
 const auth = btoa('admin:admin123');
 
-let hitosList = [];
-let usuariosList = [];
+let paginaActual = 0;
+let tamanioPagina = 10;
+let totalPaginas = 0;
+let totalElementos = 0;
+let proyectosList = [];
 
 function mostrarMensaje(mensaje, tipo = 'success') {
     const alertDiv = document.createElement('div');
@@ -15,143 +18,238 @@ function mostrarMensaje(mensaje, tipo = 'success') {
     setTimeout(() => alertDiv.remove(), 3000);
 }
 
-async function cargarActividades() {
+async function cargarHitos() {
     try {
-        const [actividadesResponse, hitosResponse, usuariosResponse] = await Promise.all([
-            fetch(`${API_URL}/actividades`, { headers: { 'Authorization': `Basic ${auth}` } }),
-            fetch(`${API_URL}/hitos`, { headers: { 'Authorization': `Basic ${auth}` } }),
-            fetch(`${API_URL}/usuarios`, { headers: { 'Authorization': `Basic ${auth}` } })
+        const [hitosResponse, proyectosResponse] = await Promise.all([
+            fetch(`${API_URL}/hitos/paginated?page=${paginaActual}&size=${tamanioPagina}`, {
+                headers: { 'Authorization': `Basic ${auth}` }
+            }),
+            fetch(`${API_URL}/proyectos`, { headers: { 'Authorization': `Basic ${auth}` } })
         ]);
         
-        if (!actividadesResponse.ok) throw new Error('Error al cargar actividades');
+        if (!hitosResponse.ok) throw new Error('Error al cargar hitos');
         
-        const actividades = await actividadesResponse.json();
-        hitosList = await hitosResponse.json();
-        usuariosList = await usuariosResponse.json();
+        const data = await hitosResponse.json();
+        proyectosList = await proyectosResponse.json();
         
-        actualizarListaActividades(actividades);
-        actualizarSelects();
-        actualizarEstadisticas(actividades);
+        totalPaginas = data.totalPaginas;
+        totalElementos = data.totalElementos;
+        
+        actualizarListaHitos(data.hitos);
+        actualizarEstadisticas();
+        actualizarPaginacion();
+        actualizarSelectProyectos();
         
     } catch (error) {
         console.error('Error:', error);
-        mostrarMensaje('Error al cargar actividades', 'danger');
+        mostrarMensaje('Error al cargar hitos', 'danger');
     }
 }
 
-function actualizarListaActividades(actividades) {
-    const container = document.querySelector('#listaActividades');
+function actualizarListaHitos(hitos) {
+    const container = document.querySelector('#listaHitos');
     if (!container) return;
     
-    if (actividades.length === 0) {
-        container.innerHTML = '<div class="alert alert-info">No hay actividades registradas</div>';
+    if (!hitos || hitos.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">No hay hitos registrados</div>';
         return;
     }
     
-    container.innerHTML = actividades.map(act => {
-        const hito = hitosList.find(h => h.id === act.hitoId);
-        const usuario = usuariosList.find(u => u.id === act.usuarioAsignadoId);
+    container.innerHTML = hitos.map(hito => {
+        const proyecto = proyectosList.find(p => p.id === hito.proyectoId);
+        const completado = new Date(hito.fechaFin) < new Date();
         
         return `
-            <div class="actividad-card">
-                <div class="actividad-header">
-                    <strong>${act.nombre}</strong>
-                    <button class="btn btn-danger btn-sm" onclick="eliminarActividad(${act.id})">🗑️</button>
-                </div>
-                <div class="actividad-body">
-                    <p>${act.descripcion || 'Sin descripción'}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <span class="usuario-asignado">👤 ${usuario?.nombre || 'Sin asignar'}</span>
-                            <span class="badge" style="background: #e0e0e0; margin-left: 0.5rem;">🎯 ${hito?.nombre || 'Sin hito'}</span>
+                            <h5 class="card-title">${hito.nombre}</h5>
+                            <p class="card-text">${hito.descripcion || 'Sin descripción'}</p>
+                            <small class="text-muted">📁 Proyecto: ${proyecto?.nombre || 'No asignado'}</small>
+                            <div class="small text-muted">📅 ${hito.fechaInicio} → ${hito.fechaFin}</div>
                         </div>
-                        <div class="fechas">
-                            📅 ${act.fechaInicio} → ${act.fechaFin}
+                        <div>
+                            <button class="btn btn-warning btn-sm" onclick="editarHito(${hito.id})">✏️</button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarHito(${hito.id})">🗑️</button>
                         </div>
                     </div>
+                    ${completado ? '<div class="mt-2"><span class="badge bg-success">Completado</span></div>' : ''}
                 </div>
             </div>
         `;
     }).join('');
 }
 
-function actualizarSelects() {
-    const hitoSelect = document.querySelector('#hitoId');
-    const usuarioSelect = document.querySelector('#usuarioId');
-    
-    if (hitoSelect) {
-        hitoSelect.innerHTML = '<option value="">Seleccionar hito</option>' +
-            hitosList.map(h => `<option value="${h.id}">${h.nombre}</option>`).join('');
-    }
-    
-    if (usuarioSelect) {
-        usuarioSelect.innerHTML = '<option value="">Seleccionar usuario</option>' +
-            usuariosList.map(u => `<option value="${u.id}">${u.nombre}</option>`).join('');
-    }
+function actualizarEstadisticas() {
+    const total = document.querySelector('#totalHitos');
+    if (total) total.textContent = totalElementos;
 }
 
-function actualizarEstadisticas(actividades) {
-    const total = document.querySelector('#totalActividades');
-    if (total) total.textContent = actividades.length;
+function actualizarPaginacion() {
+    const container = document.querySelector('#paginationControls');
+    if (!container) return;
+    if (totalPaginas <= 1) { container.innerHTML = ''; return; }
+    
+    let html = '<ul class="pagination justify-content-center">';
+    html += `<li class="page-item ${paginaActual === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1})">« Anterior</a></li>`;
+    
+    let inicio = Math.max(0, paginaActual - 2);
+    let fin = Math.min(totalPaginas, inicio + 5);
+    if (inicio > 0) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="cambiarPagina(0)">1</a></li>`;
+        if (inicio > 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+    }
+    for (let i = inicio; i < fin; i++) {
+        html += `<li class="page-item ${paginaActual === i ? 'active' : ''}"><a class="page-link" href="#" onclick="cambiarPagina(${i})">${i + 1}</a></li>`;
+    }
+    if (fin < totalPaginas) {
+        if (fin < totalPaginas - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="cambiarPagina(${totalPaginas - 1})">${totalPaginas}</a></li>`;
+    }
+    html += `<li class="page-item ${paginaActual >= totalPaginas - 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1})">Siguiente »</a></li>`;
+    html += '</ul>';
+    html += `<div class="text-center mt-2 text-muted">Mostrando ${Math.min((paginaActual + 1) * tamanioPagina, totalElementos)} de ${totalElementos} hitos | Página ${paginaActual + 1} de ${totalPaginas}</div>`;
+    
+    container.innerHTML = html;
 }
 
-async function crearActividad(event) {
+function cambiarPagina(page) {
+    if (page < 0 || page >= totalPaginas) return;
+    paginaActual = page;
+    cargarHitos();
+}
+
+function cambiarTamanioPagina() {
+    tamanioPagina = parseInt(document.querySelector('#tamanioPagina').value);
+    paginaActual = 0;
+    cargarHitos();
+}
+
+function actualizarSelectProyectos() {
+    const select = document.querySelector('#proyectoId');
+    if (!select) return;
+    select.innerHTML = '<option value="">Seleccionar proyecto</option>' +
+        proyectosList.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+}
+
+async function crearHito(event) {
     event.preventDefault();
     
-    const nuevaActividad = {
+    const nuevoHito = {
         nombre: document.querySelector('#nombre').value,
         descripcion: document.querySelector('#descripcion').value,
         fechaInicio: document.querySelector('#fechaInicio').value,
         fechaFin: document.querySelector('#fechaFin').value,
-        hitoId: parseInt(document.querySelector('#hitoId').value),
-        usuarioAsignadoId: parseInt(document.querySelector('#usuarioId').value)
+        proyectoId: parseInt(document.querySelector('#proyectoId').value)
     };
     
     try {
-        const response = await fetch(`${API_URL}/actividades`, {
+        const response = await fetch(`${API_URL}/hitos`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${auth}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(nuevaActividad)
+            body: JSON.stringify(nuevoHito)
         });
         
-        if (!response.ok) throw new Error('Error al crear actividad');
+        if (!response.ok) throw new Error('Error al crear hito');
         
-        mostrarMensaje('Actividad creada exitosamente', 'success');
-        document.querySelector('#formActividad').reset();
-        cargarActividades();
+        mostrarMensaje('Hito creado exitosamente', 'success');
+        document.querySelector('#formHito').reset();
+        cargarHitos();
         
     } catch (error) {
         console.error('Error:', error);
-        mostrarMensaje('Error al crear actividad', 'danger');
+        mostrarMensaje('Error al crear hito', 'danger');
     }
 }
 
-async function eliminarActividad(id) {
-    if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
+async function editarHito(id) {
+    try {
+        const response = await fetch(`${API_URL}/hitos/${id}`, {
+            headers: { 'Authorization': `Basic ${auth}` }
+        });
+        if (!response.ok) throw new Error('Error al obtener hito');
+        
+        const hito = await response.json();
+        
+        document.querySelector('#editId').value = hito.id;
+        document.querySelector('#editNombre').value = hito.nombre;
+        document.querySelector('#editDescripcion').value = hito.descripcion || '';
+        document.querySelector('#editFechaInicio').value = hito.fechaInicio;
+        document.querySelector('#editFechaFin').value = hito.fechaFin;
+        
+        const select = document.querySelector('#editProyectoId');
+        select.innerHTML = proyectosList.map(p => 
+            `<option value="${p.id}" ${p.id === hito.proyectoId ? 'selected' : ''}>${p.nombre}</option>`
+        ).join('');
+        
+        const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+        modal.show();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarMensaje('Error al obtener hito', 'danger');
+    }
+}
+
+async function actualizarHito() {
+    const id = document.querySelector('#editId').value;
+    const hitoActualizado = {
+        nombre: document.querySelector('#editNombre').value,
+        descripcion: document.querySelector('#editDescripcion').value,
+        fechaInicio: document.querySelector('#editFechaInicio').value,
+        fechaFin: document.querySelector('#editFechaFin').value,
+        proyectoId: parseInt(document.querySelector('#editProyectoId').value)
+    };
     
     try {
-        const response = await fetch(`${API_URL}/actividades/${id}`, {
+        const response = await fetch(`${API_URL}/hitos/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Basic ${auth}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(hitoActualizado)
+        });
+        
+        if (!response.ok) throw new Error('Error al actualizar hito');
+        
+        mostrarMensaje('Hito actualizado exitosamente', 'success');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
+        modal.hide();
+        cargarHitos();
+        
+    } catch (error) {
+        console.error('Error:', error);
+        mostrarMensaje('Error al actualizar hito', 'danger');
+    }
+}
+
+async function eliminarHito(id) {
+    if (!confirm('¿Estás seguro de eliminar este hito?')) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/hitos/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Basic ${auth}` }
         });
         
-        if (!response.ok) throw new Error('Error al eliminar actividad');
+        if (!response.ok) throw new Error('Error al eliminar hito');
         
-        mostrarMensaje('Actividad eliminada exitosamente', 'success');
-        cargarActividades();
+        mostrarMensaje('Hito eliminado exitosamente', 'success');
+        cargarHitos();
         
     } catch (error) {
         console.error('Error:', error);
-        mostrarMensaje('Error al eliminar actividad', 'danger');
+        mostrarMensaje('Error al eliminar hito', 'danger');
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    cargarActividades();
-    
-    const form = document.querySelector('#formActividad');
-    if (form) form.addEventListener('submit', crearActividad);
+    cargarHitos();
+    document.querySelector('#formHito')?.addEventListener('submit', crearHito);
+    document.querySelector('#tamanioPagina')?.addEventListener('change', cambiarTamanioPagina);
 });

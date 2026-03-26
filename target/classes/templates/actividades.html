@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Actividades</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- CSS Propios -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="stylesheet" th:href="@{/css/actividades.css}">
 </head>
@@ -32,10 +30,9 @@
     <div class="container mt-4">
         <h1 class="mb-4">✅ Gestión de Actividades</h1>
         
-        <!-- Tarjeta de estadísticas -->
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card stat-card text-white">
+                <div class="card text-white bg-primary stat-card">
                     <div class="card-body text-center">
                         <h3 id="totalActividades">0</h3>
                         <p class="mb-0">Total Actividades</p>
@@ -44,7 +41,6 @@
             </div>
         </div>
         
-        <!-- Formulario Crear Actividad -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">➕ Crear Nueva Actividad</h5>
@@ -88,18 +84,35 @@
             </div>
         </div>
         
-        <!-- Lista de Actividades -->
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">📋 Lista de Actividades</h5>
             </div>
             <div class="card-body">
-                <div id="listaActividades" class="actividades-list"></div>
+                <div id="listaActividades"></div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3">
+                        <label class="form-label">Mostrar:</label>
+                        <select id="tamanioPagina" class="form-select">
+                            <option value="5">5 actividades</option>
+                            <option value="10" selected>10 actividades</option>
+                            <option value="20">20 actividades</option>
+                            <option value="50">50 actividades</option>
+                        </select>
+                    </div>
+                    <div class="col-md-9">
+                        <div id="paginationControls"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/actividades.js}"></script>
 </body>

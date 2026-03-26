@@ -250,3 +250,95 @@ tr:hover {
 .mb-2 {
     margin-bottom: 1rem;
 }
+
+@media (min-width: 1200px) {
+    .col-md-2-4 {
+        flex: 0 0 auto;
+        width: 20%;
+    }
+}
+
+/* Dashboard centrado */
+.dashboard-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.dashboard-wrapper .row {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.dashboard-card {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.dashboard-card .card-body {
+    padding: 1.5rem 0.5rem;
+}
+
+.dashboard-card .display-1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card h3 {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.dashboard-card p {
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .dashboard-card {
+        max-width: 150px;
+    }
+    
+    .dashboard-card .display-1 {
+        font-size: 2rem;
+    }
+    
+    .dashboard-card h3 {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-card {
+        max-width: 120px;
+    }
+    
+    .dashboard-card .display-1 {
+        font-size: 1.5rem;
+    }
+    
+    .dashboard-card h3 {
+        font-size: 1rem;
+    }
+}

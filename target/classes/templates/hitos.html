@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Hitos</title>
-    <!-- Bootstrap CSS -->
+    <title>Sistema de Gestión de Proyectos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- CSS Propios -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
-    <link rel="stylesheet" th:href="@{/css/hitos.css}">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -21,7 +18,7 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" th:href="@{/usuarios}">👥 Usuarios</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/proyectos}">📁 Proyectos</a></li>
-                    <li class="nav-item"><a class="nav-link active" th:href="@{/hitos}">🎯 Hitos</a></li>
+                    <li class="nav-item"><a class="nav-link" th:href="@{/hitos}">🎯 Hitos</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/actividades}">✅ Actividades</a></li>
                     <li class="nav-item"><a class="nav-link" th:href="@{/registros}">⏱️ Registros</a></li>
                 </ul>
@@ -30,119 +27,104 @@
     </nav>
 
     <div class="container mt-4">
-        <h1 class="mb-4">🎯 Gestión de Hitos</h1>
-        
-        <!-- Tarjetas de estadísticas -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card stat-card text-white">
-                    <div class="card-body text-center">
-                        <h3 id="totalHitos">0</h3>
-                        <p class="mb-0">Total Hitos</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stat-card text-white">
-                    <div class="card-body text-center">
-                        <h3 id="hitosCompletados">0</h3>
-                        <p class="mb-0">Hitos Completados</p>
-                    </div>
-                </div>
-            </div>
+        <div class="hero-section text-center p-5 mb-4 rounded bg-primary text-white">
+            <h1 class="display-4">📊 Sistema de Gestión de Proyectos</h1>
+            <p class="lead">Administra tus proyectos, hitos, actividades y controla las horas trabajadas</p>
         </div>
-        
-        <!-- Formulario Crear Hito -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">➕ Crear Nuevo Hito</h5>
-            </div>
-            <div class="card-body">
-                <form id="formHito">
-                    <div class="mb-3">
-                        <label for="nombre" class="form-label">Nombre del Hito:</label>
-                        <input type="text" class="form-control" id="nombre" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="descripcion" class="form-label">Descripción:</label>
-                        <textarea class="form-control" id="descripcion" rows="3"></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="fechaInicio" class="form-label">Fecha de Inicio:</label>
-                            <input type="date" class="form-control" id="fechaInicio" required>
+
+        <!-- Tarjetas centradas -->
+        <div class="dashboard-wrapper">
+            <div class="row justify-content-center g-4">
+                <!-- Usuarios -->
+                <div class="col-6 col-md-4 col-lg-2 dashboard-col">
+                    <a th:href="@{/usuarios}" class="text-decoration-none">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="display-1">👥</div>
+                                <h3 id="totalUsuariosDashboard" class="card-title mt-2">0</h3>
+                                <p class="card-text text-muted">Usuarios</p>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="fechaFin" class="form-label">Fecha de Fin:</label>
-                            <input type="date" class="form-control" id="fechaFin" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="proyectoId" class="form-label">Proyecto:</label>
-                        <select class="form-select" id="proyectoId" required>
-                            <option value="">Seleccionar proyecto</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Crear Hito</button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Lista de Hitos -->
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">📋 Lista de Hitos</h5>
-            </div>
-            <div class="card-body">
-                <div id="listaHitos" class="hitos-list"></div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Modal Editar Hito -->
-    <div class="modal fade" id="modalEditar" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">✏️ Editar Hito</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </a>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" id="editId">
-                    <div class="mb-3">
-                        <label for="editNombre" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="editNombre" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editDescripcion" class="form-label">Descripción:</label>
-                        <textarea class="form-control" id="editDescripcion" rows="3"></textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="editFechaInicio" class="form-label">Fecha Inicio:</label>
-                            <input type="date" class="form-control" id="editFechaInicio" required>
+                <!-- Proyectos -->
+                <div class="col-6 col-md-4 col-lg-2 dashboard-col">
+                    <a th:href="@{/proyectos}" class="text-decoration-none">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="display-1">📁</div>
+                                <h3 id="totalProyectosDashboard" class="card-title mt-2">0</h3>
+                                <p class="card-text text-muted">Proyectos</p>
+                            </div>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="editFechaFin" class="form-label">Fecha Fin:</label>
-                            <input type="date" class="form-control" id="editFechaFin" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editProyectoId" class="form-label">Proyecto:</label>
-                        <select class="form-select" id="editProyectoId"></select>
-                    </div>
+                    </a>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="actualizarHito()">Guardar</button>
+                <!-- Hitos -->
+                <div class="col-6 col-md-4 col-lg-2 dashboard-col">
+                    <a th:href="@{/hitos}" class="text-decoration-none">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="display-1">🎯</div>
+                                <h3 id="totalHitosDashboard" class="card-title mt-2">0</h3>
+                                <p class="card-text text-muted">Hitos</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <!-- Actividades -->
+                <div class="col-6 col-md-4 col-lg-2 dashboard-col">
+                    <a th:href="@{/actividades}" class="text-decoration-none">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="display-1">✅</div>
+                                <h3 id="totalActividadesDashboard" class="card-title mt-2">0</h3>
+                                <p class="card-text text-muted">Actividades</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <!-- Registros -->
+                <div class="col-6 col-md-4 col-lg-2 dashboard-col">
+                    <a th:href="@{/registros}" class="text-decoration-none">
+                        <div class="card dashboard-card text-center">
+                            <div class="card-body">
+                                <div class="display-1">⏱️</div>
+                                <h3 id="totalRegistrosDashboard" class="card-title mt-2">0</h3>
+                                <p class="card-text text-muted">Registros</p>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Bootstrap JS (necesario para modales) -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Tu JavaScript con la lógica CRUD -->
-    <script th:src="@{/js/hitos.js}"></script>
+    <script>
+        const API_URL = 'http://localhost:8080';
+        const auth = btoa('admin:admin123');
+
+        async function cargarDashboard() {
+            try {
+                const [usuarios, proyectos, hitos, actividades, registros] = await Promise.all([
+                    fetch(`${API_URL}/usuarios/paginated?page=0&size=1`, { headers: { 'Authorization': `Basic ${auth}` } }).then(r => r.json()),
+                    fetch(`${API_URL}/proyectos/paginated?page=0&size=1`, { headers: { 'Authorization': `Basic ${auth}` } }).then(r => r.json()),
+                    fetch(`${API_URL}/hitos/paginated?page=0&size=1`, { headers: { 'Authorization': `Basic ${auth}` } }).then(r => r.json()),
+                    fetch(`${API_URL}/actividades/paginated?page=0&size=1`, { headers: { 'Authorization': `Basic ${auth}` } }).then(r => r.json()),
+                    fetch(`${API_URL}/registros/paginated?page=0&size=1`, { headers: { 'Authorization': `Basic ${auth}` } }).then(r => r.json())
+                ]);
+
+                document.getElementById('totalUsuariosDashboard').textContent = usuarios.totalElementos || 0;
+                document.getElementById('totalProyectosDashboard').textContent = proyectos.totalElementos || 0;
+                document.getElementById('totalHitosDashboard').textContent = hitos.totalElementos || 0;
+                document.getElementById('totalActividadesDashboard').textContent = actividades.totalElementos || 0;
+                document.getElementById('totalRegistrosDashboard').textContent = registros.totalElementos || 0;
+            } catch (error) {
+                console.error('Error cargando dashboard:', error);
+            }
+        }
+
+        cargarDashboard();
+    </script>
 </body>
 </html>

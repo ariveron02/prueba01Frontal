@@ -1,8 +1,12 @@
-// hitos.js - Gestión de hitos
+// hitos.js - Gestión de hitos con paginación
 
 const API_URL = 'http://localhost:8080';
 const auth = btoa('admin:admin123');
 
+let paginaActual = 0;
+let tamanioPagina = 10;
+let totalPaginas = 0;
+let totalElementos = 0;
 let proyectosList = [];
 
 function mostrarMensaje(mensaje, tipo = 'success') {
@@ -17,18 +21,24 @@ function mostrarMensaje(mensaje, tipo = 'success') {
 async function cargarHitos() {
     try {
         const [hitosResponse, proyectosResponse] = await Promise.all([
-            fetch(`${API_URL}/hitos`, { headers: { 'Authorization': `Basic ${auth}` } }),
+            fetch(`${API_URL}/hitos/paginated?page=${paginaActual}&size=${tamanioPagina}`, {
+                headers: { 'Authorization': `Basic ${auth}` }
+            }),
             fetch(`${API_URL}/proyectos`, { headers: { 'Authorization': `Basic ${auth}` } })
         ]);
         
         if (!hitosResponse.ok) throw new Error('Error al cargar hitos');
         
-        const hitos = await hitosResponse.json();
+        const data = await hitosResponse.json();
         proyectosList = await proyectosResponse.json();
         
-        actualizarListaHitos(hitos);
+        totalPaginas = data.totalPaginas;
+        totalElementos = data.totalElementos;
+        
+        actualizarListaHitos(data.hitos);
+        actualizarEstadisticas();
+        actualizarPaginacion();
         actualizarSelectProyectos();
-        actualizarEstadisticas(hitos);
         
     } catch (error) {
         console.error('Error:', error);
@@ -40,7 +50,7 @@ function actualizarListaHitos(hitos) {
     const container = document.querySelector('#listaHitos');
     if (!container) return;
     
-    if (hitos.length === 0) {
+    if (!hitos || hitos.length === 0) {
         container.innerHTML = '<div class="alert alert-info">No hay hitos registrados</div>';
         return;
     }
@@ -50,60 +60,77 @@ function actualizarListaHitos(hitos) {
         const completado = new Date(hito.fechaFin) < new Date();
         
         return `
-            <div class="hito-item ${completado ? 'completado' : ''}">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <h4>${hito.nombre}</h4>
-                        <p>${hito.descripcion || 'Sin descripción'}</p>
-                        <small>📁 Proyecto: ${proyecto?.nombre || 'No asignado'}</small>
-                        <div class="fechas">
-                            <span>📅 Inicio: ${hito.fechaInicio}</span>
-                            <span>🏁 Fin: ${hito.fechaFin}</span>
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="card-title">${hito.nombre}</h5>
+                            <p class="card-text">${hito.descripcion || 'Sin descripción'}</p>
+                            <small class="text-muted">📁 Proyecto: ${proyecto?.nombre || 'No asignado'}</small>
+                            <div class="small text-muted">📅 ${hito.fechaInicio} → ${hito.fechaFin}</div>
+                        </div>
+                        <div>
+                            <button class="btn btn-warning btn-sm" onclick="editarHito(${hito.id})">✏️</button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarHito(${hito.id})">🗑️</button>
                         </div>
                     </div>
-                    <div>
-                        <button class="btn btn-warning btn-sm" onclick="editarHito(${hito.id})">✏️</button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarHito(${hito.id})">🗑️</button>
-                    </div>
-                </div>
-                <div class="progreso-bar">
-                    <div class="progreso-fill" style="width: ${calcularProgreso(hito.fechaInicio, hito.fechaFin)}%"></div>
+                    ${completado ? '<div class="mt-2"><span class="badge bg-success">Completado</span></div>' : ''}
                 </div>
             </div>
         `;
     }).join('');
 }
 
-function calcularProgreso(fechaInicio, fechaFin) {
-    const inicio = new Date(fechaInicio);
-    const fin = new Date(fechaFin);
-    const hoy = new Date();
+function actualizarEstadisticas() {
+    const total = document.querySelector('#totalHitos');
+    if (total) total.textContent = totalElementos;
+}
+
+function actualizarPaginacion() {
+    const container = document.querySelector('#paginationControls');
+    if (!container) return;
+    if (totalPaginas <= 1) { container.innerHTML = ''; return; }
     
-    if (hoy < inicio) return 0;
-    if (hoy > fin) return 100;
+    let html = '<ul class="pagination justify-content-center">';
+    html += `<li class="page-item ${paginaActual === 0 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1})">« Anterior</a></li>`;
     
-    const total = fin - inicio;
-    const transcurrido = hoy - inicio;
-    return Math.round((transcurrido / total) * 100);
+    let inicio = Math.max(0, paginaActual - 2);
+    let fin = Math.min(totalPaginas, inicio + 5);
+    if (inicio > 0) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="cambiarPagina(0)">1</a></li>`;
+        if (inicio > 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+    }
+    for (let i = inicio; i < fin; i++) {
+        html += `<li class="page-item ${paginaActual === i ? 'active' : ''}"><a class="page-link" href="#" onclick="cambiarPagina(${i})">${i + 1}</a></li>`;
+    }
+    if (fin < totalPaginas) {
+        if (fin < totalPaginas - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="cambiarPagina(${totalPaginas - 1})">${totalPaginas}</a></li>`;
+    }
+    html += `<li class="page-item ${paginaActual >= totalPaginas - 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1})">Siguiente »</a></li>`;
+    html += '</ul>';
+    html += `<div class="text-center mt-2 text-muted">Mostrando ${Math.min((paginaActual + 1) * tamanioPagina, totalElementos)} de ${totalElementos} hitos | Página ${paginaActual + 1} de ${totalPaginas}</div>`;
+    
+    container.innerHTML = html;
+}
+
+function cambiarPagina(page) {
+    if (page < 0 || page >= totalPaginas) return;
+    paginaActual = page;
+    cargarHitos();
+}
+
+function cambiarTamanioPagina() {
+    tamanioPagina = parseInt(document.querySelector('#tamanioPagina').value);
+    paginaActual = 0;
+    cargarHitos();
 }
 
 function actualizarSelectProyectos() {
     const select = document.querySelector('#proyectoId');
     if (!select) return;
-    
     select.innerHTML = '<option value="">Seleccionar proyecto</option>' +
         proyectosList.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
-}
-
-function actualizarEstadisticas(hitos) {
-    const total = document.querySelector('#totalHitos');
-    const completados = document.querySelector('#hitosCompletados');
-    
-    if (total) total.textContent = hitos.length;
-    if (completados) {
-        const completadosCount = hitos.filter(h => new Date(h.fechaFin) < new Date()).length;
-        completados.textContent = completadosCount;
-    }
 }
 
 async function crearHito(event) {
@@ -159,7 +186,8 @@ async function editarHito(id) {
             `<option value="${p.id}" ${p.id === hito.proyectoId ? 'selected' : ''}>${p.nombre}</option>`
         ).join('');
         
-        document.querySelector('#modalEditar').style.display = 'block';
+        const modal = new bootstrap.Modal(document.getElementById('modalEditar'));
+        modal.show();
         
     } catch (error) {
         console.error('Error:', error);
@@ -190,7 +218,8 @@ async function actualizarHito() {
         if (!response.ok) throw new Error('Error al actualizar hito');
         
         mostrarMensaje('Hito actualizado exitosamente', 'success');
-        cerrarModal();
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditar'));
+        modal.hide();
         cargarHitos();
         
     } catch (error) {
@@ -219,21 +248,8 @@ async function eliminarHito(id) {
     }
 }
 
-function cerrarModal() {
-    document.querySelector('#modalEditar').style.display = 'none';
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     cargarHitos();
-    
-    const form = document.querySelector('#formHito');
-    if (form) form.addEventListener('submit', crearHito);
-    
-    const closeBtn = document.querySelector('.close');
-    if (closeBtn) closeBtn.addEventListener('click', cerrarModal);
-    
-    window.addEventListener('click', (event) => {
-        const modal = document.querySelector('#modalEditar');
-        if (event.target === modal) cerrarModal();
-    });
+    document.querySelector('#formHito')?.addEventListener('submit', crearHito);
+    document.querySelector('#tamanioPagina')?.addEventListener('change', cambiarTamanioPagina);
 });
